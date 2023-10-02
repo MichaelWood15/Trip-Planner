@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Trip Planner</title>
+
+
+  
+  <script src="https://maps.googleapis.com/maps/api/js?key=Enter_APIKEY&libraries=places&callback=Autocomplete" async></script>
+  <script> 
+  var longitude;
+  var latitude;
+  const id = "ENTER SEATGEEK ID";
+  const secret = "ENTER SEATGEEK SECRET";
+  var jsonData = "";
+  var r = 0;
+  var quitter = true;
+  var eventname = [];
+  var urlname = [];
+  function Autocomplete() 
+    {
+    const input = document.getElementById("pac-input");
+
+    // Allow the Input to be filled in by autocomplete, and then grab this information when the location is clicked on
+    const autocompletes = new google.maps.places.Autocomplete(input , types = ['geocode']);
+
+    google.maps.event.addListener(autocompletes, 'place_changed' ,function(){
+      var place = autocompletes.getPlace();
+      latitude = place.geometry.location.lat();
+      longitude = place.geometry.location.lng();
+    });
+   
+    
+    }    
+  </script>
+
+  <script>
+
+function get_place_name()
+    {
+      //Reset event name and url name array
+      eventname = [];
+      urlname = [];
+      // use the latitude and longitude grabbed from the previous api to feed to the seat geek API to get upcoming events for the given area
+      fetch("https://api.seatgeek.com/2/events?lat=" + latitude + "&lon=" + longitude + "&client_id=" + id + "&client_secret=" + secret) 
+    .then(response => response.json())
+    .then(data => {
+      jsonData = JSON.stringify(data);
+      // turn jsonData into a string to search
+      while(i < 5 && j < jsonData.length)
+        {
+          // find where name_v2 is to return the name of an event using substrings
+          
+          if(jsonData.substring(j , j + 7) == "name_v2"){
+            r = j+ 8;
+            while(jsonData[r] != ","){
+              r++;
+            }
+            // add event name to eventname array
+            eventname.push(jsonData.substring(j+10 , r-1));
+            j = r;
+            i++;
+            quitter = true;
+
+            //once eventname is found, we then find the corresponding url to push to the urlname array
+            while(j < jsonData.length && quitter){ 
+              if(jsonData.substring(j , j + 3) == "url"){
+                  r = j + 5;
+                while(jsonData[r] != ","){
+                   r++;
+                  }
+               
+                urlname.push(jsonData.substring(j+6 , r-1));
+                j=r;
+                quitter = false;
+              }
+              else j++;
+            }
+          }
+          else j++;
+        }
+        console.log(eventname);
+        console.log(urlname);
+    })
+    .catch(error => console.log(error));
+      
+    var i = 0;
+    var j = 0;
+          }
+    
+    }
+  </script>
+
+
+</head>
+
+
+
+<body>
+  <h1>Type in a city in North America, and See upcoming concerts and events in the area in the console</h1>
+    <input type= "text" id="pac-input">
+    <button type="button" onclick="get_place_name()"> Enter </button    
+</body>
+
+
+
+
+
+</html>
+
+
+    
